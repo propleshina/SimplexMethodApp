@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.IO;
 
 namespace SimplexMethod
 {
@@ -22,6 +23,7 @@ namespace SimplexMethod
             if (int.TryParse(txtNumVars.Text, out numVars) && int.TryParse(txtNumConstraints.Text, out numConstraints))
             {
                 InputsPanel.Visibility = Visibility.Visible;
+                Zagruzka.Visibility = Visibility.Visible;
                 ConstraintsInputs.Items.Clear();
                 constraintInputs.Clear();
                 for (int i = 0; i < numConstraints; i++)
@@ -72,6 +74,8 @@ namespace SimplexMethod
 
             string result = SimplexMethod(tableau);
             ResultsTextBlock.Text = result;
+
+            Vigruzka.Visibility = Visibility.Visible;
         }
 
         public static string SimplexMethod(double[,] tableau)
@@ -149,6 +153,48 @@ namespace SimplexMethod
             }
 
             return result;
+        }
+
+        private void Zagruzka_Click(object sender, RoutedEventArgs e)
+        {
+            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+            dlg.FileName = "Задача";
+            dlg.DefaultExt = ".txt";
+            dlg.Filter = "Text documents (.txt)|*.txt";
+
+            bool? result = dlg.ShowDialog();
+
+            if (result == true)
+            {
+                string[] lines = File.ReadAllLines(dlg.FileName);
+
+                txtNumVars.Text = lines[0]; // Количество переменных
+                txtNumConstraints.Text = lines[1]; // Количество ограничений
+                txtObjectiveCoefficients.Text = lines[2]; // Коэффициенты целевой функции
+
+                for (int i = 0; i < numConstraints; i++)
+                {
+                    if (i + 3 < lines.Length) // Ограничения начинаются с третьей строки
+                    {
+                        constraintInputs[i].Text = lines[i + 3];
+                    }
+                }
+            }
+        }
+
+        private void Vigruzka_Click(object sender, RoutedEventArgs e)
+        {
+            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
+            dlg.FileName = "Решение";
+            dlg.DefaultExt = ".txt";
+            dlg.Filter = "Text documents (.txt)|*.txt";
+
+            bool? result = dlg.ShowDialog();
+
+            if (result == true)
+            {
+                File.WriteAllText(dlg.FileName, ResultsTextBlock.Text);
+            }
         }
     }
 }
